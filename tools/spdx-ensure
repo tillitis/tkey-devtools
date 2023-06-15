@@ -21,7 +21,7 @@ missingok_files=(
 LICENSE
 Makefile
 README.md
-contrib/tkey-qemu.dockerfile
+tkey-qemu.dockerfile
 go.mod
 go.sum
 gotools/Makefile
