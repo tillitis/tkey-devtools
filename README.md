@@ -45,10 +45,6 @@ or run podman directly with
 $ podman run --rm --mount type=bind,source=.,target=/src -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
 ```
 
-To help prevent unpleasant surprises we keep a hash of the `signer` in
-`cmd/tkey-ssh-agent/app.bin.sha512`. The compilation will fail if this
-is not the expected binary.
-
 ### Using tkey-runapp
 
 The client app `tkey-runapp` only loads and starts a device app. It's
