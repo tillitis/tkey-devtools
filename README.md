@@ -45,6 +45,20 @@ or run podman directly with
 $ podman run --rm --mount type=bind,source=.,target=/src -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
 ```
 
+To install:
+
+```
+sudo make install
+```
+
+If you want to reload the udev rules to access the TKey use:
+
+```
+sudo make reload-rules
+```
+
+Undo the installation with the `uninstall` target.
+
 ### Using tkey-runapp
 
 The client app `tkey-runapp` only loads and starts a device app. It's
