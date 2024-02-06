@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 	"syscall"
 
@@ -19,6 +20,8 @@ import (
 
 // Use when printing err/diag msgs
 var le = log.New(os.Stderr, "", 0)
+
+var version string
 
 func main() {
 	var fileName, devPath, fileUSS string
@@ -36,6 +39,7 @@ func main() {
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
 	pflag.BoolVar(&helpOnly, "help", false, "Output this help.")
+	versionOnly := pflag.BoolP("version", "v", false, "Output version information.")
 	pflag.Usage = func() {
 		desc := fmt.Sprintf(`Usage: %[1]s [flags...] FILE
 
@@ -50,6 +54,10 @@ running some app.`, os.Args[0])
 	}
 	pflag.Parse()
 
+	if version == "" {
+		version = readBuildInfo()
+	}
+
 	if pflag.NArg() > 0 {
 		if pflag.NArg() > 1 {
 			le.Printf("Unexpected argument: %s\n\n", strings.Join(pflag.Args()[1:], " "))
@@ -57,6 +65,11 @@ running some app.`, os.Args[0])
 			os.Exit(2)
 		}
 		fileName = pflag.Args()[0]
+	}
+
+	if *versionOnly {
+		le.Printf("tkey-runapp %s", version)
+		os.Exit(0)
 	}
 
 	if helpOnly {
@@ -164,4 +177,20 @@ func handleSignals(action func(), sig ...os.Signal) {
 			action()
 		}
 	}()
+}
+
+func readBuildInfo() string {
+	var v string
+
+	if info, ok := debug.ReadBuildInfo(); ok {
+		sb := strings.Builder{}
+		sb.WriteString("devel")
+		for _, setting := range info.Settings {
+			if strings.HasPrefix(setting.Key, "vcs") {
+				sb.WriteString(fmt.Sprintf(" %s=%s", setting.Key, setting.Value))
+			}
+		}
+		v = sb.String()
+	}
+	return v
 }

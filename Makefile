@@ -26,10 +26,11 @@ reload-rules:
 podman:
 	podman run --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(CURDIR)/../tkey-libs,target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
 
+TKEY_RUNAPP_VERSION ?= $(shell git describe --dirty --always | sed -n "s/^v\(.*\)/\1/p")
 # .PHONY to let go-build handle deps and rebuilds
 .PHONY: tkey-runapp
 tkey-runapp:
-	go build ./cmd/tkey-runapp
+	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath ./cmd/tkey-runapp
 
 .PHONY: clean
 clean:
