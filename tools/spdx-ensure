@@ -18,12 +18,14 @@ missingok_files=(
 .editorconfig
 .gitignore
 .golangci.yml
+.goreleaser.yaml
 LICENSE
 Makefile
 README.md
 tkey-qemu.dockerfile
 go.mod
 go.sum
+gon.hcl
 gotools/Makefile
 gotools/go.mod
 gotools/go.sum
