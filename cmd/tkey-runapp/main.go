@@ -33,14 +33,14 @@ code is non-zero if anything goes wrong, for example if TKey is already
 running some app.`
 
 func main() {
-	var fileName, devPath, fileUSS string
+	var fileName, serialPath, fileUSS string
 	var speed int
 	var enterUSS, verbose, helpOnly bool
 
 	pflag.CommandLine.SetOutput(os.Stderr)
 	pflag.CommandLine.SortFlags = false
 
-	pflag.StringVarP(&devPath, "port", "p", "",
+	pflag.StringVarP(&serialPath, "port", "p", "",
 		"Set serial port device `PATH`. If this is not passed, auto-detection will be attempted.")
 
 	pflag.IntVarP(&speed, "speed", "s", tkeyclient.SerialSpeed,
@@ -116,8 +116,8 @@ func main() {
 	}
 
 	// Try to auto-detect the serial port if not explicitly set.
-	if devPath == "" {
-		devPath, err = tkeyclient.DetectSerialPort(true)
+	if serialPath == "" {
+		serialPath, err = tkeyclient.DetectSerialPort(true)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -125,9 +125,9 @@ func main() {
 
 	// Initialize the client and connect to the device.
 	tk := tkeyclient.New()
-	le.Printf("Connecting to device on serial port %s ...\n", devPath)
-	if err = tk.Connect(devPath, tkeyclient.WithSpeed(speed)); err != nil {
-		le.Printf("Could not open %s: %v\n", devPath, err)
+	le.Printf("Connecting to device on serial port %s ...\n", serialPath)
+	if err = tk.Connect(serialPath, tkeyclient.WithSpeed(speed)); err != nil {
+		le.Printf("Could not open %s: %v\n", serialPath, err)
 		os.Exit(1)
 	}
 
