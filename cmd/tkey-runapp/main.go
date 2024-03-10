@@ -63,17 +63,19 @@ func main() {
 	}
 	pflag.Parse()
 
+	// If the version is not explicitly defined, try to read it from the build info.
 	if version == "" {
 		version = readBuildInfo()
 	}
 
+	// If there are any arguments left, it's either an error or the file name.
 	if pflag.NArg() > 0 {
-		if pflag.NArg() > 1 {
+		if pflag.NArg() > 1 { // Too many arguments
 			le.Printf("Unexpected argument: %s\n\n", strings.Join(pflag.Args()[1:], " "))
 			pflag.Usage()
 			os.Exit(2)
 		}
-		fileName = pflag.Args()[0]
+		fileName = pflag.Args()[0] // The file name
 	}
 
 	if *versionOnly {
@@ -102,6 +104,7 @@ func main() {
 		os.Exit(2)
 	}
 
+	// Read the app binary to be sent to the device.
 	appBin, err := os.ReadFile(fileName)
 	if err != nil {
 		le.Printf("Failed to read file: %v\n", err)
@@ -112,6 +115,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Try to auto-detect the serial port if not explicitly set.
 	if devPath == "" {
 		devPath, err = tkeyclient.DetectSerialPort(true)
 		if err != nil {
@@ -119,18 +123,24 @@ func main() {
 		}
 	}
 
+	// Initialize the client and connect to the device.
 	tk := tkeyclient.New()
 	le.Printf("Connecting to device on serial port %s ...\n", devPath)
 	if err = tk.Connect(devPath, tkeyclient.WithSpeed(speed)); err != nil {
 		le.Printf("Could not open %s: %v\n", devPath, err)
 		os.Exit(1)
 	}
+
+	// Create a handler for signals to close the connection and exit with specific code.
 	exit := func(code int) {
 		if err = tk.Close(); err != nil {
 			le.Printf("Close: %v\n", err)
 		}
 		os.Exit(code)
 	}
+
+	// Mount a signal handler to close the connection on SIGINT and SIGTERM.
+	// This will always exit with code 1.
 	handleSignals(func() { exit(1) }, os.Interrupt, syscall.SIGTERM)
 
 	nameVer, err := tk.GetNameVersion()
@@ -140,6 +150,7 @@ func main() {
 			"mode, and have an app running already. Please unplug and plug it in again.\n")
 		exit(1)
 	}
+
 	le.Printf("Firmware name0:'%s' name1:'%s' version:%d\n",
 		nameVer.Name0, nameVer.Name1, nameVer.Version)
 
@@ -152,6 +163,9 @@ func main() {
 	fmt.Printf("UDI: %v\n", udi)
 
 	var secret []byte
+
+	// If the USS flag is set -> read the USS from the user.
+	// If the USS file flag is set -> read the USS from the file.
 	if enterUSS {
 		secret, err = tkeyutil.InputUSS()
 		if err != nil {
@@ -177,6 +191,7 @@ func main() {
 	exit(0)
 }
 
+// handleSignals mounts a signal handler for the given signals
 func handleSignals(action func(), sig ...os.Signal) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, sig...)
@@ -188,6 +203,7 @@ func handleSignals(action func(), sig ...os.Signal) {
 	}()
 }
 
+// readBuildInfo returns the version string from the build info, if available.
 func readBuildInfo() string {
 	var v string
 
