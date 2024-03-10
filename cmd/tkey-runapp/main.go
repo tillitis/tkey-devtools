@@ -47,7 +47,7 @@ func main() {
 		"Set serial port speed in `BPS` (bits per second).")
 
 	pflag.BoolVar(&enterUSS, "uss", false,
-		"Enable typing of a phrase to be hashed as the User Supplied Secret. The USS is loaded onto the TKey along with the app itself and used by the firmware, together with other material, for deriving secrets for the application.")
+		"Enable typing of a phrase to be hashed as the User Supplied uss. The USS is loaded onto the TKey along with the app itself and used by the firmware, together with other material, for deriving usss for the application.")
 
 	pflag.StringVar(&fileUSS, "uss-file", "",
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
@@ -162,18 +162,19 @@ func main() {
 
 	fmt.Printf("UDI: %v\n", udi)
 
-	var secret []byte
+	// User Supplied Secret (USS)
+	var uss []byte
 
 	// If the USS flag is set -> read the USS from the user.
 	// If the USS file flag is set -> read the USS from the file.
 	if enterUSS {
-		secret, err = tkeyutil.InputUSS()
+		uss, err = tkeyutil.InputUSS()
 		if err != nil {
 			le.Printf("Failed to get USS: %v\n", err)
 			exit(1)
 		}
 	} else if fileUSS != "" {
-		secret, err = tkeyutil.ReadUSS(fileUSS)
+		uss, err = tkeyutil.ReadUSS(fileUSS)
 		if err != nil {
 			le.Printf("Failed to read uss-file %s: %v", fileUSS, err)
 			exit(1)
@@ -182,7 +183,7 @@ func main() {
 
 	le.Printf("Loading app from %v onto device\n", fileName)
 
-	err = tk.LoadApp(appBin, secret)
+	err = tk.LoadApp(appBin, uss)
 	if err != nil {
 		le.Printf("LoadAppFromFile failed: %v\n", err)
 		exit(1)
