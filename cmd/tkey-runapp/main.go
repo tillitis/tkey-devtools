@@ -26,7 +26,7 @@ var version string
 func main() {
 	var fileName, devPath, fileUSS string
 	var speed int
-	var enterUSS, verbose, helpOnly bool
+	var enterUSS, verbose, helpOnly, startFromFlash bool
 	pflag.CommandLine.SetOutput(os.Stderr)
 	pflag.CommandLine.SortFlags = false
 	pflag.StringVar(&devPath, "port", "",
@@ -37,6 +37,7 @@ func main() {
 		"Enable typing of a phrase to be hashed as the User Supplied Secret. The USS is loaded onto the TKey along with the app itself and used by the firmware, together with other material, for deriving secrets for the application.")
 	pflag.StringVar(&fileUSS, "uss-file", "",
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
+	pflag.BoolVar(&startFromFlash, "start", false, "Start a preloaded app in flash.")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
 	pflag.BoolVar(&helpOnly, "help", false, "Output this help.")
 	versionOnly := pflag.BoolP("version", "v", false, "Output version information.")
@@ -158,6 +159,18 @@ running some app.`, os.Args[0])
 	}
 
 	le.Printf("Loading app from %v onto device\n", fileName)
+
+	if startFromFlash {
+		err = tk.StartAppFlash()
+		if err != nil {
+			le.Printf("StartAppFlash failed: %v\n", err)
+			exit(1)
+		}
+
+		le.Printf("App started from flash\n")
+		exit(0)
+
+	}
 
 	err = tk.LoadApp(appBin, secret)
 	if err != nil {
