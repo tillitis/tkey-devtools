@@ -1,4 +1,3 @@
-
 [![ci](https://github.com/tillitis/tkey-devtools/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/tillitis/tkey-devtools/actions/workflows/ci.yaml)
 
 # tkey-tools
@@ -9,8 +8,8 @@ This repository contains some development tools for the
 - `tkey-runapp`: A simple development tool to load and start any TKey
   device app.
 
-- `run-tkey-qemu`: Script around our 
-  [TKey emulator](https://github.com/tillitis/qemu) OCI image
+- `run-tkey-qemu`: Script around our [TKey
+  emulator](https://github.com/tillitis/qemu) OCI image
   `ghcr.io/tillitis/tkey-qemu-tk1-23.03.1`.
 
 See the [TKey Developer Handbook](https://dev.tillitis.se/) for how to
