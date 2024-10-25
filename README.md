@@ -1,17 +1,21 @@
-
 [![ci](https://github.com/tillitis/tkey-devtools/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/tillitis/tkey-devtools/actions/workflows/ci.yaml)
 
-# tkey-tools
+# tkey-devtools
 
-This repository contains some development tools for the
-[Tillitis](https://tillitis.se/) TKey USB security stick.
+Some development tools for the [Tillitis](https://tillitis.se/) TKey
+USB security stick.
 
 - `tkey-runapp`: A simple development tool to load and start any TKey
   device app.
 
-- `run-tkey-qemu`: Script around our 
-  [TKey emulator](https://github.com/tillitis/qemu) OCI image
-  `ghcr.io/tillitis/tkey-qemu-tk1-23.03.1`.
+- Source to build and run OCI images for apps development in C
+  (device) and Go (client): tkey-app-builder. See `contrib`.
+
+- Source to build an OCI image of the QEMU-based [TKey
+  emulator](https://github.com/tillitis/qemu). See `contrib`.
+
+- `run-tkey-qemu`: A script to run the above in a container and export
+  the the serial port as a pty outside the container.
 
 See the [TKey Developer Handbook](https://dev.tillitis.se/) for how to
 develop your own apps, how to run and debug them in the emulator or on
@@ -35,23 +39,18 @@ $ make
 If you want to use podman and you have `make` you can run:
 
 ```
-$ podman pull ghcr.io/tillitis/tkey-builder:2
+$ podman pull ghcr.io/tillitis/tkey-builder
 $ make podman
 ```
 
-or run podman directly with
-
-```
-$ podman run --rm --mount type=bind,source=.,target=/src -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
-```
-
-To install:
+To install under Linux:
 
 ```
 sudo make install
 ```
 
-If you want to reload the udev rules to access the TKey use:
+Note that this installs Linux udev rules to enable you to access the
+TKey. If you want to reload the udev rules to access the TKey use:
 
 ```
 sudo make reload-rules

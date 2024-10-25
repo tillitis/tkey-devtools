@@ -22,7 +22,6 @@ missingok_files=(
 LICENSE
 Makefile
 README.md
-tkey-qemu.dockerfile
 go.mod
 go.sum
 gon.hcl
