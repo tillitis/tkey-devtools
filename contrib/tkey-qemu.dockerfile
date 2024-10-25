@@ -1,3 +1,5 @@
+# Copyright (C) 2023 Tillitis AB
+# SPDX-License-Identifier: GPL-2.0-only
 
 # This is the tag in the https://github.com/tillitis/tillitis-key1 repo with
 # the firmware that our TKey/QEMU will run. The published tkey-qemu image will
