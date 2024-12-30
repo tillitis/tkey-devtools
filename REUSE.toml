@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2024 Tillitis AB <tillitis.se>
+# SPDX-License-Identifier: BSD-2-Clause
+version = 1
+
+[[annotations]]
+path = ".github/workflows/*"
+SPDX-FileCopyrightText = "2022 Tillitis AB <tillitis.se>"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = [
+     ".clang-format",
+     ".editorconfig",
+     ".gitignore",
+     ".golangci.yml",
+     ".goreleaser.yaml",
+     "Makefile",
+     "README.md",
+     "go.mod",
+     "go.sum",
+     "gon.hcl",
+     "gotools/Makefile",
+     "gotools/go.mod",
+     "gotools/go.sum",
+     "system/60-tkey.rules",
+     "tkey-qemu.dockerfile"
+]
+SPDX-FileCopyrightText = "2022 Tillitis AB <tillitis.se>"
+SPDX-License-Identifier = "BSD-2-Clause"

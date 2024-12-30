@@ -15,6 +15,7 @@ tag="SPDX-License-Identifier:"
 
 missingok_dirs=(
 .github/workflows/
+LICENSES/
 )
 
 missingok_files=(
@@ -25,6 +26,7 @@ missingok_files=(
 LICENSE
 Makefile
 README.md
+REUSE.toml
 tkey-qemu.dockerfile
 go.mod
 go.sum
