@@ -1,7 +1,8 @@
 #!/bin/sh
 
-# Copyright (C) 2023 - Tillitis AB
-# SPDX-License-Identifier: GPL-2.0-only
+# SPDX-FileCopyrightText: 2023 Tillitis AB <tillitis.se>
+# SPDX-License-Identifier: BSD-2-Clause
+
 
 image=ghcr.io/tillitis/tkey-qemu-tk1-23.03.1:latest
 if [ "$(uname -s)" != Linux ]; then

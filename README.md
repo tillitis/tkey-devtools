@@ -78,26 +78,11 @@ can attach your client programs to, typically with `--port
 
 ## Licenses and SPDX tags
 
-Unless otherwise noted, the project sources are licensed under the
-terms and conditions of the "GNU General Public License v2.0 only":
+Unless otherwise noted, the project sources are copyright Tillitis AB,
+licensed under the terms and conditions of the "BSD-2-Clause" license.
+See [LICENSE](LICENSE) for the full license text.
 
-> Copyright Tillitis AB.
->
-> These programs are free software: you can redistribute it and/or
-> modify it under the terms of the GNU General Public License as
-> published by the Free Software Foundation, version 2 only.
->
-> These programs are distributed in the hope that it will be useful,
-> but WITHOUT ANY WARRANTY; without even the implied warranty of
-> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> General Public License for more details.
-
-> You should have received a copy of the GNU General Public License
-> along with this program. If not, see:
->
-> https://www.gnu.org/licenses
-
-See [LICENSE](LICENSE) for the full GPLv2-only license text.
+Until Dec 30, 2024, the license was GPL-2.0 Only.
 
 External source code we have imported are isolated in their own
 directories. They may be released under other licenses. This is noted
