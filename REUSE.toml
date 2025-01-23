@@ -16,6 +16,8 @@ path = [
      ".goreleaser.yaml",
      "Makefile",
      "README.md",
+     "cmd/hidread/go.mod",
+     "cmd/hidread/go.sum",
      "cmd/tkey-runapp/go.mod",
      "cmd/tkey-runapp/go.sum",
      "gon.hcl",
