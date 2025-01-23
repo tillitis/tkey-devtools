@@ -1,4 +1,4 @@
-module github.com/tillitis/tillitis-key1-apps
+module github.com/tillitis/tkey-devtools/cmd/tkey-runapp
 
 go 1.19
 

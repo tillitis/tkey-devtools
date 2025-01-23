@@ -30,7 +30,9 @@ TKEY_RUNAPP_VERSION ?= $(shell git describe --dirty --always | sed -n "s/^v\(.*\
 # .PHONY to let go-build handle deps and rebuilds
 .PHONY: tkey-runapp
 tkey-runapp:
-	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath ./cmd/tkey-runapp
+	cd cmd/tkey-runapp && \
+	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath && \
+	mv tkey-runapp ../../
 
 .PHONY: clean
 clean:
