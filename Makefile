@@ -1,5 +1,5 @@
 .PHONY: all
-all: tkey-runapp hidread
+all: tkey-runapp
 
 DESTDIR=/
 PREFIX=/usr/local

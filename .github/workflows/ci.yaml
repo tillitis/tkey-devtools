@@ -13,10 +13,10 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tillitis/tkey-builder:2
+      image: ghcr.io/tillitis/tkey-builder:4
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # fetch-depth: 0
           persist-credentials: false
@@ -26,14 +26,17 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: make
-        run: make -j
-
-      - name: lint go code
-        run: make lint
-
       - name: check for SPDX tags
         run: ./tools/spdx-ensure
+
+      # Ubuntu has stopped publishing packages we use in
+      # tkey-builder:4 so we can't do this right now. Kept for a later
+      # update.
+      # - name: Install missing headers to be able to build hidread
+      #   run: apt-get update && apt-get -y install libusb-dev libudev-dev
+
+      - name: make
+        run: make -j
 
   reuse-compliance-check:
     runs-on: ubuntu-latest

@@ -124,6 +124,10 @@ To compile, you have to have a C compiler installed and then a simple
 `go build` usually works. If you want to control what C compiler to
 use, `CC=clang go build`.
 
+It has it's own target in the Makefile, so a `make hidread` should
+work if you have the necessary libraries. Note that it's not included
+in the `all` target, while we're awaiting a new CI image.
+
 #### macOS
 
 The easiest way to get a C compiler to build the C parts of `lshid`
