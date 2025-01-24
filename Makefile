@@ -51,6 +51,12 @@ clean:
 
 .PHONY: lint
 lint:
-	$(MAKE) -C gotools
-	GOOS=linux   ./gotools/golangci-lint run
-	GOOS=windows ./gotools/golangci-lint run
+	cd cmd/hidread && golangci-lint run
+	cd cmd/tkey-runapp && golangci-lint run
+
+# Extra target just for CI that excludes hidread since we can't build
+# CGO dependencies with current tkey-builder.
+.PHONY: cilint
+cilint:
+	cd cmd/tkey-runapp && golangci-lint run
+
