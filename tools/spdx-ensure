@@ -28,12 +28,11 @@ Makefile
 README.md
 REUSE.toml
 tkey-qemu.dockerfile
-go.mod
-go.sum
+cmd/hidread/go.mod
+cmd/hidread/go.sum
+cmd/tkey-runapp/go.mod
+cmd/tkey-runapp/go.sum
 gon.hcl
-gotools/Makefile
-gotools/go.mod
-gotools/go.sum
 system/60-tkey.rules
 )
 
