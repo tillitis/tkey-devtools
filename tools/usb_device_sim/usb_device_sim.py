@@ -11,8 +11,8 @@ from typing import Optional
 
 
 class IOEndpoint(enum.IntEnum):
-    DEBUG = 0x20
-    CDC = 0x40
+    CDC = 0x08
+    DEBUG = 0x40
 
 
 class Deframer:
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
             if cdc_ptm.fileno() in r_event:
                 in_data = cdc_ptm.read(1)
-                out_data = b"@\x01" + in_data
+                out_data = bytes((IOEndpoint.CDC, 1)) + in_data
 
                 print(f"cdc   -> framer:          {in_data}")
                 print(f"         framer -> uart:  {out_data}")
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
             if debug_ptm.fileno() in r_event:
                 in_data = debug_ptm.read(1)
-                out_data = b"@\x01" + in_data
+                out_data = bytes((IOEndpoint.DEBUG, 1)) + in_data
 
                 print(f"debug -> framer:          {in_data}")
                 print(f"         framer -> uart:  {out_data}")
