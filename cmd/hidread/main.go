@@ -38,6 +38,7 @@ func main() {
 	path := flag.String("f", "", "File path to device")
 	size := flag.Int("s", 64, "Size of Input Reports to read")
 	versionOnly := flag.Bool("v", false, "Output version information.")
+	enumerate := flag.Bool("e", false, "Enumerate devices.")
 
 	flag.Parse()
 
@@ -52,6 +53,19 @@ func main() {
 
 	if *help || *path == "" {
 		flag.Usage()
+		os.Exit(0)
+	}
+
+	if *enumerate {
+		hid.Enumerate(hid.VendorIDAny, hid.ProductIDAny, func(info *hid.DeviceInfo) error {
+			fmt.Printf("%s: ID %04x:%04x %s %s\n",
+				info.Path,
+				info.VendorID,
+				info.ProductID,
+				info.MfrStr,
+				info.ProductStr)
+			return nil
+		})
 		os.Exit(0)
 	}
 
