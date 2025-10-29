@@ -102,8 +102,8 @@ use `lshid` (see above) or just check the last few entries from
 running `dmesg`, typically something like this:
 
 ```
-[3726039.053825] hid-generic 0003:1207:8887.0094: hiddev97,hidraw5: USB HID v1.11 Device [Tillitis MTA1-USB-V1] on usb-0000:00:14.0-1.2.4/input2
-[3726039.055906] hid-generic 0003:1207:8887.0095: hiddev98,hidraw6: USB HID v1.11 Device [Tillitis MTA1-USB-V1] on usb-0000:00:14.0-1.2.4/input3
+[3726039.053825] hid-generic 0003:1209:8885.0094: hiddev97,hidraw5: USB HID v1.11 Device [Tillitis Tillitis TKEY-USB-V2] on usb-0000:00:14.0-1.2.4/input2
+[3726039.055906] hid-generic 0003:1209:8885.0095: hiddev98,hidraw6: USB HID v1.11 Device [Tillitis Tillitis TKEY-USB-V2] on usb-0000:00:14.0-1.2.4/input3
 ```
 
 The last one is the debug pipe. You can just do:
@@ -142,10 +142,10 @@ like this:
 ```
 mc@MCs-MacBook-Air hidread % lshid
 DevSrvsID:4294969540: ID 05ac:0281 Apple Inc. Apple Internal Keyboard / Trackpad
-DevSrvsID:4294998364: ID 1207:8887 Tillitis MTA1-USB-V1
+DevSrvsID:4294998364: ID 1209:8885 Tillitis TKEY-USB-V2
 DevSrvsID:4294969546: ID 05ac:0281 Apple Inc. Apple Internal Keyboard / Trackpad
 DevSrvsID:4294968691: ID 0000:0000 Apple
-DevSrvsID:4294998363: ID 1207:8887 Tillitis MTA1-USB-V1
+DevSrvsID:4294998363: ID 1209:8885 Tillitis TKEY-USB-V2
 DevSrvsID:4294969406: ID 0000:0000 APPL BTM
 DevSrvsID:4294968689: ID 0000:0000 Apple
 DevSrvsID:4294969542: ID 05ac:0281 Apple Inc. Apple Internal Keyboard / Trackpad
@@ -237,7 +237,7 @@ PS C:\Users\mc> lshid
 \\?\HID#INTC816&Col05#3&36043c54&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}: ID 8087:0a1e
 \\?\HID#INTC816&Col06#3&36043c54&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}: ID 8087:0a1e
 \\?\HID#INTC816&Col0A#3&36043c54&0&0009#{4d1e55b2-f16f-11cf-88cb-001111000030}: ID 8087:0a1e
-\\?\HID#VID_1207&PID_8887&MI_03#7&c3886b5&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}: ID 1207:8887 Tillitis TKEY-Ctrl
+\\?\HID#VID_1209&PID_8885&MI_03#7&c3886b5&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}: ID 1209:8885 Tillitis DEBUG
 PS C:\Users\mc>
 ```
 
@@ -247,7 +247,7 @@ Then you can listen to the debug by using the hidread program, here in
 the MSYS2 shell:
 
 ```
-$ ./hidread -f '\\?\HID#VID_1207&PID_8887&MI_03#7&c3886b5&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}'
+$ ./hidread -f '\\?\HID#VID_1209&PID_8885&MI_03#7&c3886b5&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}'
 parser state: 0x00000000
 ```
 
