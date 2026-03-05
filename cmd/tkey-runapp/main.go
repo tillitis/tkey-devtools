@@ -26,17 +26,17 @@ var version string
 func main() {
 	var fileName, devPath, fileUSS string
 	var speed int
-	var enterUSS, verbose, helpOnly bool
+	var enterUSS, verbose, helpOnly, forceFullUss bool
 	pflag.CommandLine.SetOutput(os.Stderr)
 	pflag.CommandLine.SortFlags = false
 	pflag.StringVar(&devPath, "port", "",
 		"Set serial port device `PATH`. If this is not passed, auto-detection will be attempted.")
-	pflag.IntVar(&speed, "speed", tkeyclient.SerialSpeed,
-		"Set serial port speed in `BPS` (bits per second).")
+	pflag.IntVar(&speed, "speed", 0, "Set serial port speed in `BPS` (bits per second).")
 	pflag.BoolVar(&enterUSS, "uss", false,
 		"Enable typing of a phrase to be hashed as the User Supplied Secret. The USS is loaded onto the TKey along with the app itself and used by the firmware, together with other material, for deriving secrets for the application.")
 	pflag.StringVar(&fileUSS, "uss-file", "",
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
+	pflag.BoolVar(&forceFullUss, "force-full-uss", false, "Force use of 32 byte USS digest.")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
 	pflag.BoolVar(&helpOnly, "help", false, "Output this help.")
 	versionOnly := pflag.BoolP("version", "v", false, "Output version information.")
@@ -111,8 +111,18 @@ running some app.`, os.Args[0])
 	}
 
 	tk := tkeyclient.New()
+	options := []func(*tkeyclient.TillitisKey){}
+
+	if speed != 0 {
+		options = append(options, tkeyclient.WithSpeed(speed))
+	}
+
+	if forceFullUss {
+		options = append(options, tkeyclient.WithFullUss())
+	}
+
 	le.Printf("Connecting to device on serial port %s ...\n", devPath)
-	if err = tk.Connect(devPath, tkeyclient.WithSpeed(speed)); err != nil {
+	if err = tk.Connect(devPath, options...); err != nil {
 		le.Printf("Could not open %s: %v\n", devPath, err)
 		os.Exit(1)
 	}

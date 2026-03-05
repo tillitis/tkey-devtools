@@ -4,12 +4,13 @@ go 1.23.0
 
 require (
 	github.com/spf13/pflag v1.0.5
-	github.com/tillitis/tkeyclient v1.2.0
+	github.com/tillitis/tkeyclient v1.3.0
 	github.com/tillitis/tkeyutil v0.0.9
 )
 
 require (
 	github.com/ccoveille/go-safecast v1.5.0 // indirect
+	github.com/ccoveille/go-safecast/v2 v2.0.0 // indirect
 	github.com/creack/goselect v0.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4 // indirect
