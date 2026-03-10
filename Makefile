@@ -59,4 +59,3 @@ lint:
 .PHONY: cilint
 cilint:
 	cd cmd/tkey-runapp && golangci-lint run
-
