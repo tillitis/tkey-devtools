@@ -25,7 +25,7 @@ reload-rules:
 	udevadm trigger
 
 podman:
-	podman run --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(CURDIR)/../tkey-libs,target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
+	podman run --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(CURDIR)/../tkey-libs,target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:5rc2 make -j
 
 TKEY_DEVTOOLS_VERSION ?= $(shell git describe --dirty --always | sed -n "s/^v\(.*\)/\1/p")
 TKEY_RUNAPP_VERSION ?= $(TKEY_DEVTOOLS_VERSION)
