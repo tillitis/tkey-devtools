@@ -1,3 +1,11 @@
+# Check for OS
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	BUILD_CGO_ENABLED ?= 1
+else
+	BUILD_CGO_ENABLED ?= 0
+endif
+
 .PHONY: all
 all: tkey-runapp
 
@@ -35,7 +43,7 @@ HIDREAD_VERSION ?= $(TKEY_DEVTOOLS_VERSION)
 .PHONY: tkey-runapp
 tkey-runapp:
 	cd cmd/tkey-runapp && \
-	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath -buildvcs=false && \
+	CGO_ENABLED=$(BUILD_CGO_ENABLED) go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath -buildvcs=false && \
 	mv tkey-runapp ../../
 
 .PHONY: hidread
