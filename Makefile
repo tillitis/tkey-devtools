@@ -35,13 +35,13 @@ HIDREAD_VERSION ?= $(TKEY_DEVTOOLS_VERSION)
 .PHONY: tkey-runapp
 tkey-runapp:
 	cd cmd/tkey-runapp && \
-	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath && \
+	go build -ldflags "-w -X main.version=$(TKEY_RUNAPP_VERSION) -buildid=" -trimpath -buildvcs=false && \
 	mv tkey-runapp ../../
 
 .PHONY: hidread
 hidread:
 	cd cmd/hidread && \
-	go build -ldflags "-w -X main.version=$(HIDREAD_VERSION) -buildid=" -trimpath && \
+	go build -ldflags "-w -X main.version=$(HIDREAD_VERSION) -buildid=" -trimpath -buildvcs=false && \
 	mv hidread ../../
 
 .PHONY: clean
