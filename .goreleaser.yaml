@@ -7,12 +7,12 @@ release:
 before:
   hooks:
     # You may remove this if you don't use go modules.
-    - go mod tidy
+    - sh -c 'cd ./cmd/tkey-runapp && go mod tidy'
     # you may remove this if you don't need go generate
-    - go generate ./...
+    - sh -c 'cd ./cmd/tkey-runapp && go generate ./...'
 builds:
   - id: linux
-    main: ./cmd/tkey-runapp
+    dir: ./cmd/tkey-runapp
     binary: tkey-runapp
     env:
       - GOPROXY=https://proxy.golang.org,direct
@@ -33,7 +33,7 @@ builds:
       -w -X main.version={{ .Version }} -buildid=
 
   - id: darwin
-    main: ./cmd/tkey-runapp
+    dir: ./cmd/tkey-runapp
     binary: tkey-runapp
     env:
       - GOPROXY=https://proxy.golang.org,direct
@@ -54,7 +54,7 @@ builds:
       -w -X main.version={{ .Version }} -buildid=
 
   - id: windows
-    main: ./cmd/tkey-runapp
+    dir: ./cmd/tkey-runapp
     binary: tkey-runapp
     env:
       - GOPROXY=https://proxy.golang.org,direct
