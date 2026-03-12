@@ -134,7 +134,7 @@ nfpms:
       Tillitis TKey and start it.
 
     # Your app's license.
-    license: GPL 2.0
+    license: BSD-2-Clause
 
     # Formats to be generated.
     formats:
