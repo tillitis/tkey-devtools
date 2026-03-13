@@ -58,6 +58,8 @@ running some app.`, os.Args[0])
 		version = readBuildInfo()
 	}
 
+	notice()
+
 	if pflag.NArg() > 0 {
 		if pflag.NArg() > 1 {
 			le.Printf("Unexpected argument: %s\n\n", strings.Join(pflag.Args()[1:], " "))
@@ -176,6 +178,17 @@ running some app.`, os.Args[0])
 	}
 
 	exit(0)
+}
+
+func notice() {
+	fmt.Printf("--------------------------------------------------------------------------------\n")
+	fmt.Printf("tkey-runapp %v\n", version)
+	fmt.Printf(`
+NOTE: Version v0.0.1 had a vulnerability. Your keys might have
+changed! Read more in the release notes RELEASE.md at
+https://github.com/tillitis/tkey-devtools/
+`)
+	fmt.Printf("--------------------------------------------------------------------------------\n\n")
 }
 
 func handleSignals(action func(), sig ...os.Signal) {
