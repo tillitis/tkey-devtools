@@ -21,6 +21,8 @@ real hardware.
 
 [Current list of known projects](https://dev.tillitis.se/projects/).
 
+See [Release notes](RELEASE.md).
+
 ## Building
 
 You have two options, either our OCI image
