@@ -95,6 +95,12 @@ running some app.`, os.Args[0])
 		os.Exit(2)
 	}
 
+	if forceFullUss && fileUSS == "" != enterUSS {
+		le.Printf("--force-full-uss unusable unless you also specify --uss or --uss-file.\n\n")
+		pflag.Usage()
+		os.Exit(2)
+	}
+
 	appBin, err := os.ReadFile(fileName)
 	if err != nil {
 		le.Printf("Failed to read file: %v\n", err)
