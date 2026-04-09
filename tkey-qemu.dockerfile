@@ -3,15 +3,14 @@
 # the firmware that our TKey/QEMU will run. The published tkey-qemu image will
 # have this as part of its name, the tag is then used for versioning the image
 # (could be updates to the TKey QEMU machine).
-ARG TKEYREPO_TAG=TK1-23.03.1
+ARG TKEYREPO_TAG=TK1-24.03
 
 # This is what we'll actually checkout when building the firmware. It
-# really is the firmware as of the TK1-tag above, but a couple of
-# commits later where the firmware checksum was committed!
-ARG TKEYREPO_TREEISH=444ee3d26c3acf651ff1bbb12023034ccee6ed68
+# should be the release commit.
+ARG TKEYREPO_TREEISH=1c90b1aa3dbfb4e62039683ee6049ae8af608498
 
 # Using tkey-builder image for building since it has the deps.
-FROM ghcr.io/tillitis/tkey-builder:2 AS builder
+FROM ghcr.io/tillitis/tkey-builder:4 AS builder
 
 ARG TKEYREPO_TREEISH
 
