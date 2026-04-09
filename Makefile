@@ -9,11 +9,11 @@ endif
 .PHONY: all
 all: tkey-runapp
 
-DESTDIR=/
+DESTDIR=
 PREFIX=/usr/local
 UDEVDIR=/etc/udev
-destbin=$(DESTDIR)/$(PREFIX)/bin
-destrules=$(DESTDIR)/$(UDEVDIR)/rules.d
+destbin=$(DESTDIR)$(PREFIX)/bin
+destrules=$(DESTDIR)$(UDEVDIR)/rules.d
 .PHONY: install
 install:
 	install -Dm755 tkey-runapp $(destbin)/tkey-runapp
