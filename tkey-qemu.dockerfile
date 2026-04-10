@@ -9,18 +9,23 @@ ARG TKEYREPO_TAG=TK1-24.03
 # should be the release commit.
 ARG TKEYREPO_TREEISH=1c90b1aa3dbfb4e62039683ee6049ae8af608498
 
-# Using tkey-builder image for building since it has the deps.
-FROM ghcr.io/tillitis/tkey-builder:4 AS builder
+FROM docker.io/library/ubuntu:24.04 as qemu-builder
 
-ARG TKEYREPO_TREEISH
+RUN apt-get -qq update -y \
+    && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -y --no-install-recommends \
+               build-essential \
+               ca-certificates \
+               git \
+               libglib2.0-dev \
+               ninja-build \
+               python3 \
+               python3-venv
 
 # Cleaning up /usr/local since we will later COPY all from there
 RUN rm -rf \
     /usr/local/bin/* \
-    /usr/local/pico-sdk \
-    /usr/local/repo-commit-* \
-    /usr/local/share/icebox \
-    /usr/local/share/yosys
+    /usr/local/repo-commit-*
 
 RUN git clone -b tk1 --depth=1 https://github.com/tillitis/qemu /src/qemu \
     && mkdir /src/qemu/build
@@ -29,6 +34,10 @@ RUN ../configure --target-list=riscv32-softmmu --disable-werror \
     && make -j "$(nproc --ignore=2)" \
     && make install \
     && git >/usr/local/repo-commit-tillitis--qemu describe --all --always --long --dirty
+
+FROM ghcr.io/tillitis/tkey-builder:4 AS firmware-builder
+
+ARG TKEYREPO_TREEISH
 
 RUN git clone https://github.com/tillitis/tillitis-key1 /src/tkey
 WORKDIR /src/tkey/hw/application_fpga
@@ -43,7 +52,7 @@ RUN git checkout ${TKEYREPO_TREEISH} \
 
 
 # Our QEMU "runtime" image
-FROM docker.io/library/ubuntu:22.10
+FROM docker.io/library/ubuntu:24.04
 
 ARG TKEYREPO_TAG
 
@@ -55,9 +64,10 @@ RUN apt-get -qq update -y \
                libpixman-1-0 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/local/ /usr/local
-COPY --from=builder /src/tkey/hw/application_fpga/firmware-noconsole.elf /tkey-firmware-noconsole.elf
-COPY --from=builder /src/tkey/hw/application_fpga/firmware-console.elf   /tkey-firmware-console.elf
+COPY --from=qemu-builder /usr/local/ /usr/local
+COPY --from=firmware-builder /usr/local/repo-commit-tillitis--key1 /usr/local/
+COPY --from=firmware-builder /src/tkey/hw/application_fpga/firmware-noconsole.elf /tkey-firmware-noconsole.elf
+COPY --from=firmware-builder /src/tkey/hw/application_fpga/firmware-console.elf   /tkey-firmware-console.elf
 
 CMD [ "qemu-system-riscv32" \
     , "-nographic" \
