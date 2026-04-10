@@ -9,7 +9,12 @@ ARG TKEYREPO_TAG=TK1-24.03
 # should be the release commit.
 ARG TKEYREPO_TREEISH=1c90b1aa3dbfb4e62039683ee6049ae8af608498
 
+# This is what we'll checkout when building QEmu
+ARG QEMUREPO_TREEISH=d8413fe3d93daee611cb737a52819cb2cb89976d
+
 FROM docker.io/library/ubuntu:24.04 as qemu-builder
+
+ARG QEMUREPO_TREEISH
 
 RUN apt-get -qq update -y \
     && DEBIAN_FRONTEND=noninteractive \
@@ -27,7 +32,8 @@ RUN rm -rf \
     /usr/local/bin/* \
     /usr/local/repo-commit-*
 
-RUN git clone -b tk1 --depth=1 https://github.com/tillitis/qemu /src/qemu \
+RUN git clone -b tk1 --single-branch https://github.com/tillitis/qemu /src/qemu \
+    && (cd /src/qemu && git checkout ${QEMUREPO_TREEISH}) \
     && mkdir /src/qemu/build
 WORKDIR /src/qemu/build
 RUN ../configure --target-list=riscv32-softmmu --disable-werror \
