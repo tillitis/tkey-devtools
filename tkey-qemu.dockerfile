@@ -62,9 +62,11 @@ RUN apt-get -qq update -y \
                libglib2.0-0 \
                libusb-1.0-0 \
                libpixman-1-0 \
+               python3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=qemu-builder /usr/local/ /usr/local
+COPY --from=qemu-builder /src/qemu/tools/tk1/qemu_usb_mux.py /usr/local/bin/
 COPY --from=firmware-builder /usr/local/repo-commit-tillitis--key1 /usr/local/
 COPY --from=firmware-builder /src/tkey/hw/application_fpga/firmware-noconsole.elf /tkey-firmware-noconsole.elf
 COPY --from=firmware-builder /src/tkey/hw/application_fpga/firmware-console.elf   /tkey-firmware-console.elf
