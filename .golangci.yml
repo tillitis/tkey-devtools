@@ -15,14 +15,12 @@ linters:
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocritic
-    - gocyclo
     - godox
     - gomoddirectives
     - gomodguard
     - gosec
     - gosmopolitan
     - loggercheck
-    - maintidx
     - makezero
     - misspell
     - musttag
@@ -53,7 +51,9 @@ linters:
     - exhaustruct
     - funlen
     - gocognit
+    - gocyclo
     - godot
+    - maintidx
     - nestif
     - perfsprint
     - noctx
