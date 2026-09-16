@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	// "errors"
 	"fmt"
 	"log"
 	"os"
@@ -26,7 +27,7 @@ var version string
 func main() {
 	var fileName, devPath, fileUSS string
 	var speed int
-	var enterUSS, verbose, helpOnly, forceFullUss bool
+	var enterUSS, verbose, helpOnly, forceFullUss, notUsbDevice, noRemoteClose bool
 	pflag.CommandLine.SetOutput(os.Stderr)
 	pflag.CommandLine.SortFlags = false
 	pflag.StringVar(&devPath, "port", "",
@@ -37,6 +38,8 @@ func main() {
 	pflag.StringVar(&fileUSS, "uss-file", "",
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
 	pflag.BoolVar(&forceFullUss, "force-full-uss", false, "Force use of 32 byte USS digest.")
+	pflag.BoolVar(&notUsbDevice, "not-usb-device", false, "Not a USB device, like a tty to QEmu.")
+	pflag.BoolVar(&noRemoteClose, "no-remote-close", false, "Do not expect serial port to disappear when TKey resets")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
 	pflag.BoolVar(&helpOnly, "help", false, "Output this help.")
 	versionOnly := pflag.BoolP("version", "v", false, "Output version information.")
@@ -44,7 +47,8 @@ func main() {
 		desc := fmt.Sprintf(`Usage: %[1]s [flags...] FILE
 
 %[1]s loads an application binary from FILE onto Tillitis TKey
-and starts it.
+and starts it. Tries a reset if an app is already loaded, and the TKey
+supports reset.
 
 Exit status code is 0 if the app is both successfully loaded and started. Exit
 code is non-zero if anything goes wrong, for example if TKey is already
@@ -129,6 +133,14 @@ running some app.`, os.Args[0])
 		options = append(options, tkeyclient.WithFullUss())
 	}
 
+	if noRemoteClose {
+		options = append(options, tkeyclient.NoRemoteClose())
+	}
+
+	if notUsbDevice {
+		options = append(options, tkeyclient.NotUSBDevice())
+	}
+
 	le.Printf("Connecting to device on serial port %s ...\n", devPath)
 	if err = tk.Connect(devPath, options...); err != nil {
 		le.Printf("Could not open %s: %v\n", devPath, err)
@@ -142,16 +154,44 @@ running some app.`, os.Args[0])
 	}
 	handleSignals(func() { exit(1) }, os.Interrupt, syscall.SIGTERM)
 
+	isFirmware, err := tk.FirmwareActive()
+
+	if err != nil {
+		le.Printf("Firmware probe failed: %v\n", err)
+		le.Printf("Cannot communicate with TKey, is the port correct?\n")
+		exit(1)
+	}
+
+	if !isFirmware {
+		if !notUsbDevice && !tk.CanRemoteClose {
+			le.Printf("TKey does not support reset, unplug and insert TKey again.\n")
+			exit(1)
+		}
+
+		le.Printf("Not in firmware mode, trying to reset ...\n")
+		nextAppData := tkeyclient.NewNextAppDataFromSlice([]byte{0})
+		err = tk.Reset(tkeyclient.RstTypeStartClient, nextAppData)
+		if err != nil {
+			le.Printf("Reset failed: %v\n", err)
+			exit(1)
+		}
+
+		err = reconnect(tk)
+		if err != nil {
+			le.Printf("Failed to reconnect: %v\n", err)
+			exit(1)
+		}
+	}
+
 	nameVer, err := tk.GetNameVersion()
 	if err != nil {
 		le.Printf("GetNameVersion failed: %v\n", err)
-		le.Printf("If the serial port is correct, then the TKey might not be in firmware-\n" +
-			"mode, and have an app running already. Please unplug and plug it in again.\n")
+		le.Printf("Cannot communicate with TKey, is the port correct?\n")
 		exit(1)
 	}
+
 	le.Printf("Firmware name0:'%s' name1:'%s' version:%d\n",
 		nameVer.Name0, nameVer.Name1, nameVer.Version)
-
 	udi, err := tk.GetUDI()
 	if err != nil {
 		le.Printf("GetUDI failed: %v\n", err)
@@ -184,6 +224,20 @@ running some app.`, os.Args[0])
 	}
 
 	exit(0)
+}
+
+func reconnect(tk *tkeyclient.TillitisKey) error {
+	err := tk.WaitClosed()
+	if err != nil {
+		return fmt.Errorf("expected port close: %w", err)
+	}
+
+	err = tk.Reconnect()
+	if err != nil {
+		return fmt.Errorf("couldn't reconnect: %w", err)
+	}
+
+	return nil
 }
 
 func notice() {
