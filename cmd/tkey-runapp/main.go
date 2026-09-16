@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -44,7 +45,8 @@ func main() {
 		desc := fmt.Sprintf(`Usage: %[1]s [flags...] FILE
 
 %[1]s loads an application binary from FILE onto Tillitis TKey
-and starts it.
+and starts it. Tries a reset if an app is already loaded, and the TKey
+supports reset.
 
 Exit status code is 0 if the app is both successfully loaded and started. Exit
 code is non-zero if anything goes wrong, for example if TKey is already
@@ -142,16 +144,48 @@ running some app.`, os.Args[0])
 	}
 	handleSignals(func() { exit(1) }, os.Interrupt, syscall.SIGTERM)
 
+	var isFirmware bool
 	nameVer, err := tk.GetNameVersion()
-	if err != nil {
+
+	if errors.Is(err, tkeyclient.ErrResponseStatusNotOK) {
+		// Not firmware, try a reset
+		isFirmware = false
+	} else if err != nil {
 		le.Printf("GetNameVersion failed: %v\n", err)
-		le.Printf("If the serial port is correct, then the TKey might not be in firmware-\n" +
-			"mode, and have an app running already. Please unplug and plug it in again.\n")
+		le.Printf("Cannot communicate with TKey, is the port correct?\n")
 		exit(1)
 	}
+
+	if !isFirmware {
+		if !tk.CanRemoteClose {
+			le.Printf("TKey does not support reset, unplug and insert TKey again.\n")
+			exit(1)
+		}
+
+		le.Printf("Not in firmware mode, trying to reset ...\n")
+		nextAppData := tkeyclient.NewNextAppDataFromSlice([]byte{0})
+		err = tk.Reset(tkeyclient.RstTypeStartClient, nextAppData)
+		if err != nil {
+			le.Printf("Reset failed: %v\n", err)
+			exit(1)
+		}
+
+		err = reconnect(tk)
+		if err != nil {
+			le.Printf("Failed to reconnect: %v\n", err)
+			exit(1)
+		}
+
+		nameVer, err = tk.GetNameVersion()
+		if err != nil {
+			le.Printf("GetNameVersion failed: %v\n", err)
+			le.Printf("Cannot communicate with TKey, is the port correct?\n")
+			exit(1)
+		}
+	}
+
 	le.Printf("Firmware name0:'%s' name1:'%s' version:%d\n",
 		nameVer.Name0, nameVer.Name1, nameVer.Version)
-
 	udi, err := tk.GetUDI()
 	if err != nil {
 		le.Printf("GetUDI failed: %v\n", err)
@@ -184,6 +218,20 @@ running some app.`, os.Args[0])
 	}
 
 	exit(0)
+}
+
+func reconnect(tk *tkeyclient.TillitisKey) error {
+	err := tk.WaitClosed()
+	if err != nil {
+		return fmt.Errorf("expected port close: %w", err)
+	}
+
+	err = tk.Reconnect()
+	if err != nil {
+		return fmt.Errorf("couldn't reconnect: %w", err)
+	}
+
+	return nil
 }
 
 func notice() {
