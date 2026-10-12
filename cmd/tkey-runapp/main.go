@@ -40,8 +40,8 @@ func main() {
 	pflag.StringVar(&fileUSS, "uss-file", "",
 		"Read `FILE` and hash its contents as the USS. Use '-' (dash) to read from stdin. The full contents are hashed unmodified (e.g. newlines are not stripped).")
 	pflag.BoolVar(&forceFullUss, "force-full-uss", false, "Force use of 32 byte USS digest.")
-	pflag.BoolVar(&notUsbDevice, "not-usb-device", false, "Not a USB device, like a tty to QEmu.")
-	pflag.BoolVar(&noRemoteClose, "no-remote-close", false, "Do not expect serial port to disappear when TKey resets")
+	pflag.BoolVar(&notUsbDevice, "not-usb-device", false, "Not a USB device, like a tty to QEMU.")
+	pflag.BoolVar(&noRemoteClose, "no-remote-close", false, "Do not expect serial port to disappear when TKey resets.")
 	pflag.BoolVar(&resetClient, "reset-client", false, "Send a reset request to wait for a client to load an app.")
 	pflag.BoolVar(&resetFlash, "reset-flash", false, "Send a reset request to load the app from flash.")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
@@ -104,7 +104,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	}
 
 	if enterUSS && fileUSS != "" {
-		le.Printf("Can't combine --uss and --uss-file\n\n")
+		le.Printf("Can't combine --uss and --uss-file.\n\n")
 		pflag.Usage()
 		os.Exit(2)
 	}
@@ -118,11 +118,11 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	if !resetClient && !resetFlash {
 		appBin, err = os.ReadFile(fileName)
 		if err != nil {
-			le.Printf("Failed to read file: %v\n", err)
+			le.Printf("Failed to read file: %v\n\n", err)
 			os.Exit(1)
 		}
 		if bytes.HasPrefix(appBin, []byte("\x7fELF")) {
-			le.Printf("%s looks like an ELF executable, but a raw binary is expected.\n", fileName)
+			le.Printf("%s looks like an ELF executable, but a raw binary is expected.\n\n", fileName)
 			os.Exit(1)
 		}
 	}
@@ -160,13 +160,15 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	}
 
 	le.Printf("Connecting to device on serial port %s ...\n", devPath)
-	if err = tk.Connect(devPath, options...); err != nil {
-		le.Printf("Could not open %s: %v\n", devPath, err)
+	err = tk.Connect(devPath, options...)
+	if err != nil {
+		le.Printf("Could not open %s: %v\n\n", devPath, err)
 		os.Exit(1)
 	}
 	exit := func(code int) {
-		if err = tk.Close(); err != nil {
-			le.Printf("Close: %v\n", err)
+		err = tk.Close()
+		if err != nil {
+			le.Printf("Close: %v\n\n", err)
 		}
 		os.Exit(code)
 	}
@@ -198,7 +200,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 
 		err = tk.WaitClosed()
 		if err != nil {
-			le.Printf("expected port close: %v\n\n", err)
+			le.Printf("Failed waiting for port close: %v\n\n", err)
 			exit(1)
 		}
 
@@ -206,16 +208,15 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	}
 
 	isFirmware, err := tk.FirmwareActive()
-
 	if err != nil {
 		le.Printf("Firmware probe failed: %v\n", err)
-		le.Printf("Cannot communicate with TKey, is the port correct?\n")
+		le.Printf("Cannot communicate with TKey, is the port correct?\n\n")
 		exit(1)
 	}
 
 	if !isFirmware {
 		if !notUsbDevice && !tk.CanRemoteClose {
-			le.Printf("TKey does not support reset, unplug and insert TKey again.\n")
+			le.Printf("TKey does not support reset, unplug and insert TKey again.\n\n")
 			exit(1)
 		}
 
@@ -223,13 +224,13 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 		nextAppData := tkeyclient.NewNextAppDataFromSlice([]byte{0})
 		err = tk.Reset(tkeyclient.RstTypeStartClient, nextAppData)
 		if err != nil {
-			le.Printf("Reset failed: %v\n", err)
+			le.Printf("Reset failed: %v\n\n", err)
 			exit(1)
 		}
 
 		err = reconnect(tk)
 		if err != nil {
-			le.Printf("Failed to reconnect: %v\n", err)
+			le.Printf("Failed to reconnect: %v\n\n", err)
 			exit(1)
 		}
 	}
@@ -237,7 +238,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	nameVer, err := tk.GetNameVersion()
 	if err != nil {
 		le.Printf("GetNameVersion failed: %v\n", err)
-		le.Printf("Cannot communicate with TKey, is the port correct?\n")
+		le.Printf("Cannot communicate with TKey, is the port correct?\n\n")
 		exit(1)
 	}
 
@@ -245,7 +246,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 		nameVer.Name0, nameVer.Name1, nameVer.Version)
 	udi, err := tk.GetUDI()
 	if err != nil {
-		le.Printf("GetUDI failed: %v\n", err)
+		le.Printf("GetUDI failed: %v\n\n", err)
 		exit(1)
 	}
 
@@ -255,13 +256,13 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 	if enterUSS {
 		secret, err = tkeyutil.InputUSS()
 		if err != nil {
-			le.Printf("Failed to get USS: %v\n", err)
+			le.Printf("Failed to get USS: %v\n\n", err)
 			exit(1)
 		}
 	} else if fileUSS != "" {
 		secret, err = tkeyutil.ReadUSS(fileUSS)
 		if err != nil {
-			le.Printf("Failed to read uss-file %s: %v", fileUSS, err)
+			le.Printf("Failed to read uss-file %s: %v\n\n", fileUSS, err)
 			exit(1)
 		}
 	}
@@ -270,7 +271,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 
 	err = tk.LoadApp(appBin, secret)
 	if err != nil {
-		le.Printf("LoadAppFromFile failed: %v\n", err)
+		le.Printf("LoadApp failed: %v\n\n", err)
 		exit(1)
 	}
 
@@ -280,7 +281,7 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 func reconnect(tk *tkeyclient.TillitisKey) error {
 	err := tk.WaitClosed()
 	if err != nil {
-		return fmt.Errorf("expected port close: %w", err)
+		return fmt.Errorf("waiting for port close: %w", err)
 	}
 
 	err = tk.Reconnect()
