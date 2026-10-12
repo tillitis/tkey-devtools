@@ -127,6 +127,12 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 		}
 	}
 
+	if notUsbDevice && devPath == "" {
+		le.Printf("--not-usb-device requires --port to be specified.\n\n")
+		pflag.Usage()
+		os.Exit(2)
+	}
+
 	if devPath == "" {
 		devPath, err = tkeyclient.DetectSerialPort(true)
 		if err != nil {
