@@ -166,9 +166,9 @@ code is non-zero if anything goes wrong.`, os.Args[0])
 		os.Exit(1)
 	}
 	exit := func(code int) {
-		err = tk.Close()
-		if err != nil {
-			le.Printf("Close: %v\n", err)
+		closeErr := tk.Close()
+		if closeErr != nil {
+			le.Printf("Close: %v\n", closeErr)
 		}
 		os.Exit(code)
 	}
