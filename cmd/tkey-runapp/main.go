@@ -27,7 +27,9 @@ var version string
 func main() {
 	var fileName, devPath, fileUSS string
 	var speed int
-	var enterUSS, verbose, helpOnly, forceFullUss, notUsbDevice, noRemoteClose bool
+	var enterUSS, verbose, helpOnly, forceFullUss, notUsbDevice, noRemoteClose, resetClient, resetFlash bool
+	var err error
+	var appBin []byte
 	pflag.CommandLine.SetOutput(os.Stderr)
 	pflag.CommandLine.SortFlags = false
 	pflag.StringVar(&devPath, "port", "",
@@ -40,19 +42,21 @@ func main() {
 	pflag.BoolVar(&forceFullUss, "force-full-uss", false, "Force use of 32 byte USS digest.")
 	pflag.BoolVar(&notUsbDevice, "not-usb-device", false, "Not a USB device, like a tty to QEmu.")
 	pflag.BoolVar(&noRemoteClose, "no-remote-close", false, "Do not expect serial port to disappear when TKey resets")
+	pflag.BoolVar(&resetClient, "reset-client", false, "Send a reset request to wait for a client to load an app.")
+	pflag.BoolVar(&resetFlash, "reset-flash", false, "Send a reset request to load the app from flash.")
 	pflag.BoolVar(&verbose, "verbose", false, "Enable verbose output.")
 	pflag.BoolVar(&helpOnly, "help", false, "Output this help.")
 	versionOnly := pflag.BoolP("version", "v", false, "Output version information.")
 	pflag.Usage = func() {
-		desc := fmt.Sprintf(`Usage: %[1]s [flags...] FILE
+		desc := fmt.Sprintf(`Usage: %[1]s [flags...] [FILE]
 
 %[1]s loads an application binary from FILE onto Tillitis TKey
 and starts it. Tries a reset if an app is already loaded, and the TKey
-supports reset.
+supports reset. Use --reset-client or --reset-flash to only send a
+reset request and exit.
 
-Exit status code is 0 if the app is both successfully loaded and started. Exit
-code is non-zero if anything goes wrong, for example if TKey is already
-running some app.`, os.Args[0])
+Exit status code is 0 if the app successfully completes its action. Exit
+code is non-zero if anything goes wrong.`, os.Args[0])
 		le.Printf("%s\n\n%s", desc,
 			pflag.CommandLine.FlagUsagesWrapped(86))
 	}
@@ -83,8 +87,14 @@ running some app.`, os.Args[0])
 		os.Exit(0)
 	}
 
-	if fileName == "" {
+	if fileName == "" && !resetClient && !resetFlash {
 		le.Printf("Please pass an app binary FILE.\n\n")
+		pflag.Usage()
+		os.Exit(2)
+	}
+
+	if resetClient && resetFlash {
+		le.Printf("Can't combine --reset-client and --reset-flash.\n\n")
 		pflag.Usage()
 		os.Exit(2)
 	}
@@ -105,14 +115,16 @@ running some app.`, os.Args[0])
 		os.Exit(2)
 	}
 
-	appBin, err := os.ReadFile(fileName)
-	if err != nil {
-		le.Printf("Failed to read file: %v\n", err)
-		os.Exit(1)
-	}
-	if bytes.HasPrefix(appBin, []byte("\x7fELF")) {
-		le.Printf("%s looks like an ELF executable, but a raw binary is expected.\n", fileName)
-		os.Exit(1)
+	if !resetClient && !resetFlash {
+		appBin, err = os.ReadFile(fileName)
+		if err != nil {
+			le.Printf("Failed to read file: %v\n", err)
+			os.Exit(1)
+		}
+		if bytes.HasPrefix(appBin, []byte("\x7fELF")) {
+			le.Printf("%s looks like an ELF executable, but a raw binary is expected.\n", fileName)
+			os.Exit(1)
+		}
 	}
 
 	if devPath == "" {
@@ -153,6 +165,39 @@ running some app.`, os.Args[0])
 		os.Exit(code)
 	}
 	handleSignals(func() { exit(1) }, os.Interrupt, syscall.SIGTERM)
+
+	if resetClient || resetFlash {
+		if !notUsbDevice && !tk.CanRemoteClose {
+			le.Printf("TKey does not support reset, unplug and insert TKey again.\n\n")
+			exit(1)
+		}
+
+		var rt tkeyclient.ResetType
+		var name string
+		if resetFlash {
+			rt = tkeyclient.RstTypeStartFlash0
+			name = "flash"
+		} else {
+			rt = tkeyclient.RstTypeStartClient
+			name = "client"
+		}
+		nextAppData := tkeyclient.NewNextAppDataFromSlice([]byte{0})
+
+		le.Printf("Sending reset (%s) ...\n", name)
+		err = tk.Reset(rt, nextAppData)
+		if err != nil {
+			le.Printf("Reset failed: %v\n\n", err)
+			exit(1)
+		}
+
+		err = tk.WaitClosed()
+		if err != nil {
+			le.Printf("expected port close: %v\n\n", err)
+			exit(1)
+		}
+
+		exit(0)
+	}
 
 	isFirmware, err := tk.FirmwareActive()
 
